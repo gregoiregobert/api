@@ -34,3 +34,4 @@ CMD [ "node", "dist/main"]
 #npm i nestjs-typeorm-paginate --save
 #npm i --save bcrypt
 #npm i class-validator --save
+#npm i --save class-transformer
