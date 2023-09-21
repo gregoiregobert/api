@@ -27,3 +27,10 @@ COPY --from=development /thomas/src/app/ .
 EXPOSE 3000
 
 CMD [ "node", "dist/main"]
+
+
+#npm i --save @nestjs/config
+#npm i --save @nestjs/typeorm typeorm pg
+#npm i nestjs-typeorm-paginate --save
+#npm i --save bcrypt
+#npm i class-validator --save
