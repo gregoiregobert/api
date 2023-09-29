@@ -1,16 +1,32 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { UserService } from '../service/user.service';
-import { Observable, of } from 'rxjs';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { UserService } from '../service/user-service/user.service';
+import { Observable, of, switchMap } from 'rxjs';
 import { CreateUserDto } from '../model/dto/creat-user.dto';
+import { UserHelperService } from '../service/user-helper/user-helper.service';
+import { UserI } from '../model/user.interface';
 
 @Controller('user')
 export class UserController {
 
-	constructor(private userService: UserService) {}
+	constructor(
+		private userService: UserService,
+		private userHelperService: UserHelperService
+		) {}
 
 	@Post()
-	create(@Body() createUserDto: CreateUserDto): Observable<boolean> {
-		return of(true);
+	create(@Body() createUserDto: CreateUserDto ): Observable<UserI> {
+		return this.userHelperService.createUserDtoToEntity(createUserDto).pipe(
+			switchMap((user: UserI) => this.userService.create(user))
+		);
 	}
 
+	@Get()
+	findAll() {
+
+	}
+
+	@Post()
+	login() {
+
+	}
 }

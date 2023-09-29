@@ -14,15 +14,21 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const common_1 = require("@nestjs/common");
-const user_service_1 = require("../service/user.service");
+const user_service_1 = require("../service/user-service/user.service");
 const rxjs_1 = require("rxjs");
 const creat_user_dto_1 = require("../model/dto/creat-user.dto");
+const user_helper_service_1 = require("../service/user-helper/user-helper.service");
 let UserController = class UserController {
-    constructor(userService) {
+    constructor(userService, userHelperService) {
         this.userService = userService;
+        this.userHelperService = userHelperService;
     }
     create(createUserDto) {
-        return (0, rxjs_1.of)(true);
+        return this.userHelperService.createUserDtoToEntity(createUserDto).pipe((0, rxjs_1.switchMap)((user) => this.userService.create(user)));
+    }
+    findAll() {
+    }
+    login() {
     }
 };
 exports.UserController = UserController;
@@ -33,8 +39,21 @@ __decorate([
     __metadata("design:paramtypes", [creat_user_dto_1.CreateUserDto]),
     __metadata("design:returntype", rxjs_1.Observable)
 ], UserController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Post)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UserController.prototype, "login", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.Controller)('user'),
-    __metadata("design:paramtypes", [user_service_1.UserService])
+    __metadata("design:paramtypes", [user_service_1.UserService,
+        user_helper_service_1.UserHelperService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map

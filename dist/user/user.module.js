@@ -9,9 +9,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModule = void 0;
 const common_1 = require("@nestjs/common");
 const user_controller_1 = require("./controller/user.controller");
-const user_service_1 = require("./service/user.service");
+const user_service_1 = require("./service/user-service/user.service");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("./model/user.entity");
+const user_helper_service_1 = require("./service/user-helper/user-helper.service");
 let UserModule = class UserModule {
 };
 exports.UserModule = UserModule;
@@ -21,7 +22,7 @@ exports.UserModule = UserModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.UserEntity])
         ],
         controllers: [user_controller_1.UserController],
-        providers: [user_service_1.UserService]
+        providers: [user_service_1.UserService, user_helper_service_1.UserHelperService]
     })
 ], UserModule);
 //# sourceMappingURL=user.module.js.map
