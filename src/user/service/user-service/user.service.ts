@@ -4,6 +4,7 @@ import { Observable, from, map, switchMap } from 'rxjs';
 import { UserEntity } from 'src/user/model/user.entity';
 import { UserI } from 'src/user/model/user.interface';
 import { Repository } from 'typeorm';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
