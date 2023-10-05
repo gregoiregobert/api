@@ -36,4 +36,4 @@ CMD [ "node", "dist/main"]
 #npm i class-validator --save
 #npm i --save class-transformer
 #npm i --save @nestjs/passport passport passport-local
-#npm i --save passport-jwt
+#npm i --save @nestjs/jwt passport-jwt

@@ -17,12 +17,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
 const rxjs_1 = require("rxjs");
+const auth_service_1 = require("../../../auth/service/auth.service");
 const user_entity_1 = require("../../model/user.entity");
 const typeorm_2 = require("typeorm");
 const bcrypt = require('bcrypt');
 let UserService = class UserService {
-    constructor(userRepository) {
+    constructor(userRepository, authService) {
         this.userRepository = userRepository;
+        this.authService = authService;
     }
     create(newUser) {
         return this.mailExists(newUser.email).pipe((0, rxjs_1.switchMap)((exists) => {
@@ -58,14 +60,14 @@ let UserService = class UserService {
     findAll(options) {
         return (0, rxjs_1.from)((0, nestjs_typeorm_paginate_1.paginate)(this.userRepository, options));
     }
-    validatePassword(password, storedPasswordHash) {
-        return (0, rxjs_1.from)(bcrypt.compare(password, storedPasswordHash));
-    }
     findByEmail(email) {
         return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email }, select: ['id', 'email', 'username', 'password'] }));
     }
+    validatePassword(password, storedPasswordHash) {
+        return this.authService.comparePassword(password, storedPasswordHash);
+    }
     hashPassword(password) {
-        return (0, rxjs_1.from)(bcrypt.hash(password, 12));
+        return this.authService.hashPassword(password);
     }
     findOne(id) {
         return (0, rxjs_1.from)(this.userRepository.findOne({ where: { id } }));
@@ -85,6 +87,7 @@ exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.UserEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        auth_service_1.AuthService])
 ], UserService);
 //# sourceMappingURL=user.service.js.map

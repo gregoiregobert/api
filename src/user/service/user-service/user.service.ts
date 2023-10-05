@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { Observable, from, map, mapTo, switchMap } from 'rxjs';
+import { AuthService } from 'src/auth/service/auth.service';
 import { UserEntity } from 'src/user/model/user.entity';
 import { UserI } from 'src/user/model/user.interface';
 import { Repository } from 'typeorm';
@@ -13,7 +14,8 @@ export class UserService {
 
 	constructor(
 		@InjectRepository(UserEntity)
-		private readonly userRepository: Repository<UserEntity>
+		private readonly userRepository: Repository<UserEntity>,
+		private authService: AuthService
 	) {}
 
 	create(newUser: UserI): Observable<UserI> {
@@ -60,16 +62,16 @@ export class UserService {
 		return from(paginate<UserEntity>(this.userRepository, options));
 	}
 
-	private validatePassword(password: string, storedPasswordHash: string): Observable<any> {
-		return from(bcrypt.compare(password, storedPasswordHash))
-	}
-
 	private findByEmail(email: string): Observable<UserI> {
 		return from(this.userRepository.findOne({ where: { email }, select: ['id', 'email', 'username' ,'password']}));
 	}
 
+	private validatePassword(password: string, storedPasswordHash: string): Observable<any> {
+		return this.authService.comparePassword(password, storedPasswordHash);
+	}
+
 	private hashPassword(password: string): Observable<string> {
-		return from<string>(bcrypt.hash(password, 12));
+		return this.authService.hashPassword(password);
 	}
 	
 	private findOne(id: number): Observable<UserI> {
