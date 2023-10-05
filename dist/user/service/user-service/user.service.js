@@ -15,16 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
 const rxjs_1 = require("rxjs");
 const user_entity_1 = require("../../model/user.entity");
 const typeorm_2 = require("typeorm");
+const bcrypt = require('bcrypt');
 let UserService = class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
     }
     create(newUser) {
         return this.mailExists(newUser.email).pipe((0, rxjs_1.switchMap)((exists) => {
-            if (exists === true) {
+            if (!exists) {
+                console.log(exists);
                 return this.hashPassword(newUser.password).pipe((0, rxjs_1.switchMap)((passwordHash) => {
                     newUser.password = passwordHash;
                     return (0, rxjs_1.from)(this.userRepository.save(newUser)).pipe((0, rxjs_1.switchMap)((user) => this.findOne(user.id)));
@@ -35,14 +38,40 @@ let UserService = class UserService {
             }
         }));
     }
+    login(user) {
+        return this.findByEmail(user.email).pipe((0, rxjs_1.switchMap)((foundUser) => {
+            if (foundUser) {
+                return this.validatePassword(user.password, foundUser.password).pipe((0, rxjs_1.switchMap)((matches) => {
+                    if (matches) {
+                        return this.findOne(foundUser.id).pipe((0, rxjs_1.mapTo)(true));
+                    }
+                    else {
+                        throw new common_1.HttpException("login was not successfull, wrong credentials", common_1.HttpStatus.UNAUTHORIZED);
+                    }
+                }));
+            }
+            else {
+                throw new common_1.HttpException("User not found", common_1.HttpStatus.NOT_FOUND);
+            }
+        }));
+    }
+    findAll(options) {
+        return (0, rxjs_1.from)((0, nestjs_typeorm_paginate_1.paginate)(this.userRepository, options));
+    }
+    validatePassword(password, storedPasswordHash) {
+        return (0, rxjs_1.from)(bcrypt.compare(password, storedPasswordHash));
+    }
+    findByEmail(email) {
+        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email }, select: ['id', 'email', 'username', 'password'] }));
+    }
     hashPassword(password) {
         return (0, rxjs_1.from)(bcrypt.hash(password, 12));
     }
     findOne(id) {
-        return (0, rxjs_1.from)(this.userRepository.findOne({ id }));
+        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { id } }));
     }
     mailExists(email) {
-        return (0, rxjs_1.from)(this.userRepository.findOne({ email })).pipe((0, rxjs_1.map)((user) => {
+        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email } })).pipe((0, rxjs_1.map)((user) => {
             if (user) {
                 return true;
             }
