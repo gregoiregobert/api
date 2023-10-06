@@ -9,28 +9,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthService = void 0;
+exports.JwtStrategy = void 0;
+const passport_jwt_1 = require("passport-jwt");
+const passport_1 = require("@nestjs/passport");
 const common_1 = require("@nestjs/common");
-const jwt_1 = require("@nestjs/jwt");
-const rxjs_1 = require("rxjs");
-const bcrypt = require('bcrypt');
-let AuthService = class AuthService {
-    constructor(jwtService) {
-        this.jwtService = jwtService;
+const config_1 = require("@nestjs/config");
+let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
+    constructor(configService) {
+        super({
+            jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ignoreExpiration: false,
+            secretOrKey: configService.get('JWT_SECRET')
+        });
+        this.configService = configService;
     }
-    generateJwt(user) {
-        return (0, rxjs_1.from)(this.jwtService.signAsync({ user }));
-    }
-    hashPassword(password) {
-        return (0, rxjs_1.from)(bcrypt.hash(password, 12));
-    }
-    comparePassword(password, storedPasswordHash) {
-        return (0, rxjs_1.from)(bcrypt.compare(password, storedPasswordHash));
+    async validate(payload) {
+        return { ...payload.user };
     }
 };
-exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.JwtStrategy = JwtStrategy;
+exports.JwtStrategy = JwtStrategy = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [jwt_1.JwtService])
-], AuthService);
-//# sourceMappingURL=auth.service.js.map
+    __metadata("design:paramtypes", [config_1.ConfigService])
+], JwtStrategy);
+//# sourceMappingURL=jwt.strategy.js.map

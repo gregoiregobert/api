@@ -9,7 +9,7 @@ export declare class UserService {
     private authService;
     constructor(userRepository: Repository<UserEntity>, authService: AuthService);
     create(newUser: UserI): Observable<UserI>;
-    login(user: UserI): Observable<boolean>;
+    login(user: UserI): Observable<string>;
     findAll(options: IPaginationOptions): Observable<Pagination<UserI>>;
     private findByEmail;
     private validatePassword;

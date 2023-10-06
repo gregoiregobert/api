@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { UserService } from '../service/user-service/user.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { CreateUserDto } from '../model/dto/creat-user.dto';
@@ -6,6 +6,9 @@ import { UserHelperService } from '../service/user-helper/user-helper.service';
 import { UserI } from '../model/user.interface';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { loginUserDto } from '../model/dto/login-user.dto';
+import { LoginResponseI } from '../model/login-response.interface';
+import { map } from 'rxjs/operators';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guards';
 
 @Controller('users')
 export class UserController {
@@ -22,6 +25,7 @@ export class UserController {
 		);
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Get()
 	findAll(
 		@Query('page') page: number = 1,
@@ -32,9 +36,17 @@ export class UserController {
 	}
 
 	@Post('login')
-	login(@Body() loginUserDto: loginUserDto): Observable<boolean> {
+	login(@Body() loginUserDto: loginUserDto): Observable<LoginResponseI> {
 		return this.userHelperService.loginUserDtoToEntity(loginUserDto).pipe(
-			switchMap((user: UserI) => this.userService.login(user))
+			switchMap((user: UserI) => this.userService.login(user).pipe(
+				map((jwt: string) => {
+					return {
+						access_token: jwt,
+						token_type: 'JWT',
+						expires_in: 10000
+					};
+				})
+			))
 		)
 	}
 }

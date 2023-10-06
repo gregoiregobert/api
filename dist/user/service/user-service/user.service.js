@@ -29,7 +29,6 @@ let UserService = class UserService {
     create(newUser) {
         return this.mailExists(newUser.email).pipe((0, rxjs_1.switchMap)((exists) => {
             if (!exists) {
-                console.log(exists);
                 return this.hashPassword(newUser.password).pipe((0, rxjs_1.switchMap)((passwordHash) => {
                     newUser.password = passwordHash;
                     return (0, rxjs_1.from)(this.userRepository.save(newUser)).pipe((0, rxjs_1.switchMap)((user) => this.findOne(user.id)));
@@ -45,7 +44,7 @@ let UserService = class UserService {
             if (foundUser) {
                 return this.validatePassword(user.password, foundUser.password).pipe((0, rxjs_1.switchMap)((matches) => {
                     if (matches) {
-                        return this.findOne(foundUser.id).pipe((0, rxjs_1.mapTo)(true));
+                        return this.findOne(foundUser.id).pipe((0, rxjs_1.switchMap)((payload) => this.authService.generateJwt(payload)));
                     }
                     else {
                         throw new common_1.HttpException("login was not successfull, wrong credentials", common_1.HttpStatus.UNAUTHORIZED);

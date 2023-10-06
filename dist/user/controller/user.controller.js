@@ -19,6 +19,8 @@ const rxjs_1 = require("rxjs");
 const creat_user_dto_1 = require("../model/dto/creat-user.dto");
 const user_helper_service_1 = require("../service/user-helper/user-helper.service");
 const login_user_dto_1 = require("../model/dto/login-user.dto");
+const operators_1 = require("rxjs/operators");
+const jwt_guards_1 = require("../../auth/guards/jwt.guards");
 let UserController = class UserController {
     constructor(userService, userHelperService) {
         this.userService = userService;
@@ -32,7 +34,13 @@ let UserController = class UserController {
         return this.userService.findAll({ page, limit, route: 'http://localhost:3000/api/userS' });
     }
     login(loginUserDto) {
-        return this.userHelperService.loginUserDtoToEntity(loginUserDto).pipe((0, rxjs_1.switchMap)((user) => this.userService.login(user)));
+        return this.userHelperService.loginUserDtoToEntity(loginUserDto).pipe((0, rxjs_1.switchMap)((user) => this.userService.login(user).pipe((0, operators_1.map)((jwt) => {
+            return {
+                access_token: jwt,
+                token_type: 'JWT',
+                expires_in: 10000
+            };
+        }))));
     }
 };
 exports.UserController = UserController;
@@ -44,6 +52,7 @@ __decorate([
     __metadata("design:returntype", rxjs_1.Observable)
 ], UserController.prototype, "create", null);
 __decorate([
+    (0, common_1.UseGuards)(jwt_guards_1.JwtAuthGuard),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),

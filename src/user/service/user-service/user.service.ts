@@ -22,7 +22,6 @@ export class UserService {
 		return this.mailExists(newUser.email).pipe(
 			switchMap((exists: boolean) => {
 				if (!exists) {
-					console.log(exists);
 					return this.hashPassword(newUser.password).pipe(
 						switchMap((passwordHash: string) => {
 							newUser.password= passwordHash;
@@ -38,14 +37,16 @@ export class UserService {
 		)
 	}
 
-	login(user: UserI): Observable<boolean> {
+	login(user: UserI): Observable<string> {
 		return this.findByEmail(user.email).pipe(
 			switchMap((foundUser: UserI) => {
 				if (foundUser) {
 					return this.validatePassword(user.password, foundUser.password).pipe(
 						switchMap((matches: boolean) => {
 							if (matches) {
-								return this.findOne(foundUser.id).pipe(mapTo(true))
+								return this.findOne(foundUser.id).pipe(
+									switchMap((payload: UserI) => this.authService.generateJwt(payload))
+								)
 							} else {
 								throw new HttpException("login was not successfull, wrong credentials", HttpStatus.UNAUTHORIZED)
 							}
