@@ -24,14 +24,15 @@ let AuthMiddleware = class AuthMiddleware {
             const decodedToken = await this.authService.verifyJwt(tokenArray[1]);
             const user = await this.userService.getOne(decodedToken.user.id);
             if (user) {
+                req.user = user;
                 next();
             }
             else {
-                throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+                throw new common_1.HttpException('Middleware Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
             }
         }
         catch {
-            throw new common_1.HttpException('Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
+            throw new common_1.HttpException('Middleware Unauthorized', common_1.HttpStatus.UNAUTHORIZED);
         }
     }
 };

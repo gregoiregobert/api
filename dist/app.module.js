@@ -20,7 +20,7 @@ let AppModule = class AppModule {
         consumer
             .apply(auth_middleware_1.AuthMiddleware)
             .exclude({ path: '/api/users', method: common_1.RequestMethod.POST }, { path: '/api/users/login', method: common_1.RequestMethod.POST })
-            .forRoutes('');
+            .forRoutes({ path: '/api/users', method: common_1.RequestMethod.GET });
     }
 };
 exports.AppModule = AppModule;

@@ -8,9 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 
 @Module({
-  imports: [
+  imports: 
+  [
 	ConfigModule.forRoot({isGlobal: true}),
-	TypeOrmModule.forRoot({
+	TypeOrmModule.forRoot
+	({
 		type: 'postgres',
 		url: process.env.DATABASE_URL,
 		autoLoadEntities: true,
@@ -22,14 +24,18 @@ import { AuthMiddleware } from './middleware/auth.middleware';
   controllers: [AppController],
   providers: [AppService],
 })
-	export class AppModule implements NestModule {
-		configure(consumer: MiddlewareConsumer) {
-		consumer
-			.apply(AuthMiddleware)
-			.exclude(
-				{ path: '/api/users', method: RequestMethod.POST },
-				{ path: '/api/users/login', method: RequestMethod.POST }
-			)
-			.forRoutes('')
-		}
-}
+
+export class AppModule implements NestModule 
+{
+	configure(consumer: MiddlewareConsumer) 
+	{
+	  consumer
+		.apply(AuthMiddleware)
+		.exclude
+		(
+		  { path: '/api/users', method: RequestMethod.POST} ,
+		  { path: '/api/users/login', method: RequestMethod.POST }
+		)
+		.forRoutes({ path: '/api/users', method: RequestMethod.GET })
+	}
+  }
