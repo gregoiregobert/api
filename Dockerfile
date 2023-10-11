@@ -37,3 +37,4 @@ CMD [ "node", "dist/main"]
 #npm i --save class-transformer
 #npm i --save @nestjs/passport passport passport-local
 #npm i --save @nestjs/jwt passport-jwt
+#npm i --save @nestjs/websockets @nestjs/platform-socket.io
