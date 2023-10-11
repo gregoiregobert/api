@@ -4,11 +4,15 @@
 		{
 			"type": "node",
 			"request": "attach",
-			"name": "Launch Program",
+			"name": "Debug: nestjs real time chat",
+			"remoteRoot": "/chat/src/app",
+			"localRoot": "${workspaceFolder}",
+			"port": 9229,
+			"restart": true,
+			"address": "0.0.0.0",
 			"skipFiles": [
 				"<node_internals>/**"
 			],
-			"program": "${file}"
 		}
 	]
 }

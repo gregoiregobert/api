@@ -71,6 +71,9 @@ let UserService = class UserService {
     findOne(id) {
         return (0, rxjs_1.from)(this.userRepository.findOne({ where: { id } }));
     }
+    getOne(id) {
+        return this.userRepository.findOneOrFail({ where: { id } });
+    }
     mailExists(email) {
         return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email } })).pipe((0, rxjs_1.map)((user) => {
             if (user) {

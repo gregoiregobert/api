@@ -15,5 +15,6 @@ export declare class UserService {
     private validatePassword;
     private hashPassword;
     private findOne;
+    getOne(id: number): Promise<UserI>;
     private mailExists;
 }
