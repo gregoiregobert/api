@@ -12,11 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 let ChatGateway = class ChatGateway {
-    handleMessage(client, payload) {
-        return 'Hello world!';
-    }
     handleConnection() {
         console.log('on Connect');
+        this.server.emit('message', 'test');
     }
     handleDisconnect() {
         console.log('on Disconnect');
@@ -24,11 +22,9 @@ let ChatGateway = class ChatGateway {
 };
 exports.ChatGateway = ChatGateway;
 __decorate([
-    (0, websockets_1.SubscribeMessage)('message'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", String)
-], ChatGateway.prototype, "handleMessage", null);
+    (0, websockets_1.WebSocketServer)(),
+    __metadata("design:type", Object)
+], ChatGateway.prototype, "server", void 0);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: { origin: ['https://hoppscotch.io', 'http://localhost:3000', 'http://localhost:4200'] } })
 ], ChatGateway);

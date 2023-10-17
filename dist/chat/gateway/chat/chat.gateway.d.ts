@@ -1,6 +1,6 @@
 import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 export declare class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-    handleMessage(client: any, payload: any): string;
+    server: any;
     handleConnection(): void;
     handleDisconnect(): void;
 }
