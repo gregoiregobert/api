@@ -11,13 +11,16 @@ const common_1 = require("@nestjs/common");
 const chat_gateway_1 = require("./gateway/chat/chat.gateway");
 const auth_module_1 = require("../auth/auth.module");
 const user_module_1 = require("../user/user.module");
+const room_service_1 = require("./service/room-service/room/room.service");
+const typeorm_1 = require("@nestjs/typeorm");
+const room_entity_1 = require("./model/room.entity");
 let ChatModule = class ChatModule {
 };
 exports.ChatModule = ChatModule;
 exports.ChatModule = ChatModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, user_module_1.UserModule],
-        providers: [chat_gateway_1.ChatGateway]
+        imports: [auth_module_1.AuthModule, user_module_1.UserModule, typeorm_1.TypeOrmModule.forFeature([room_entity_1.RoomEntity])],
+        providers: [chat_gateway_1.ChatGateway, room_service_1.RoomService]
     })
 ], ChatModule);
 //# sourceMappingURL=chat.module.js.map

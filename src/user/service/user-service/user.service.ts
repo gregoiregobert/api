@@ -24,7 +24,7 @@ export class UserService {
 				if (!exists) {
 					return this.hashPassword(newUser.password).pipe(
 						switchMap((passwordHash: string) => {
-							newUser.password= passwordHash;
+							newUser.password = passwordHash;
 							return from(this.userRepository.save(newUser)).pipe(
 								switchMap((user: UserI) => this.findOne(user.id))
 							);

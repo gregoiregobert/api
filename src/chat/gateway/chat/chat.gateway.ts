@@ -2,6 +2,8 @@ import { UnauthorizedException } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/service/auth.service';
+import { RoomI } from 'src/chat/model/room.interface';
+import { RoomService } from 'src/chat/service/room-service/room/room.service';
 import { UserI } from 'src/user/model/user.interface';
 import { UserService } from 'src/user/service/user-service/user.service';
 
@@ -11,9 +13,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	@WebSocketServer()
 	server: Server;
 
-	title: string[] = [];
-
-	constructor(private authService: AuthService, private userService: UserService) {}
+	constructor(private authService: AuthService, private userService: UserService, private roomService: RoomService) {}
 
 	async handleConnection(socket: Socket) {
 		try {
@@ -22,8 +22,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			if (!user) {
 				return this.disconnect(socket);
 			} else {
-				this.title.push('Value' + Math.random().toString());
-				this.server.emit('message', this.title);
+				socket.data.user = user;
+				const rooms = await this.roomService.getRoomForUser(user.id, {page: 1, limit: 10});
+
+				return this.server.to(socket.id).emit('rooms', rooms);
 			}
 		} catch  {
 			return this.disconnect(socket);
@@ -38,5 +40,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	private disconnect(socket: Socket) {
 		socket.emit('Error', new UnauthorizedException());
 		socket.disconnect();
+	}
+
+	@SubscribeMessage('createRoom')
+	async onCreateRoom(socket: Socket, room: RoomI): Promise<RoomI> {
+		console.log('creator: ' + socket.data.user);
+		console.log('room' + room);
+		return this.roomService.createRoom(room, socket.data.user);
 	}
 }
