@@ -26,6 +26,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				this.server.emit('message', this.title);
 			}
 		} catch  {
+			return this.disconnect(socket);
 		}
 	}
 

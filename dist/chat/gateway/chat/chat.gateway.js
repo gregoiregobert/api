@@ -10,22 +10,48 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatGateway = void 0;
+const common_1 = require("@nestjs/common");
 const websockets_1 = require("@nestjs/websockets");
+const socket_io_1 = require("socket.io");
+const auth_service_1 = require("../../../auth/service/auth.service");
+const user_service_1 = require("../../../user/service/user-service/user.service");
 let ChatGateway = class ChatGateway {
-    handleConnection() {
-        console.log('on Connect');
-        this.server.emit('message', 'test');
+    constructor(authService, userService) {
+        this.authService = authService;
+        this.userService = userService;
+        this.title = [];
     }
-    handleDisconnect() {
-        console.log('on Disconnect');
+    async handleConnection(socket) {
+        try {
+            const decodedToken = await this.authService.verifyJwt(socket.handshake.headers.authorization);
+            const user = await this.userService.getOne(decodedToken.user.id);
+            if (!user) {
+                return this.disconnect(socket);
+            }
+            else {
+                this.title.push('Value' + Math.random().toString());
+                this.server.emit('message', this.title);
+            }
+        }
+        catch {
+            return this.disconnect(socket);
+        }
+    }
+    handleDisconnect(socket) {
+        socket.disconnect();
+    }
+    disconnect(socket) {
+        socket.emit('Error', new common_1.UnauthorizedException());
+        socket.disconnect();
     }
 };
 exports.ChatGateway = ChatGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", socket_io_1.Server)
 ], ChatGateway.prototype, "server", void 0);
 exports.ChatGateway = ChatGateway = __decorate([
-    (0, websockets_1.WebSocketGateway)({ cors: { origin: ['https://hoppscotch.io', 'http://localhost:3000', 'http://localhost:4200'] } })
+    (0, websockets_1.WebSocketGateway)({ cors: { origin: ['https://hoppscotch.io', 'http://localhost:3000', 'http://localhost:4200'] } }),
+    __metadata("design:paramtypes", [auth_service_1.AuthService, user_service_1.UserService])
 ], ChatGateway);
 //# sourceMappingURL=chat.gateway.js.map
