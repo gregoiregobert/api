@@ -31,7 +31,6 @@ let RoomService = class RoomService {
             .createQueryBuilder('room')
             .leftJoin('room.users', 'user')
             .where('user.id = :userId', { userId });
-			
         return (0, nestjs_typeorm_paginate_1.paginate)(query, options);
     }
     async addCreatorToRoom(room, creator) {
