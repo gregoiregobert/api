@@ -79,6 +79,8 @@ __decorate([
 ], ChatGateway.prototype, "onPaginateRoom", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: { origin: ['https://hoppscotch.io', 'http://localhost:3000', 'http://localhost:4200'] } }),
-    __metadata("design:paramtypes", [auth_service_1.AuthService, user_service_1.UserService, room_service_1.RoomService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        user_service_1.UserService,
+        room_service_1.RoomService])
 ], ChatGateway);
 //# sourceMappingURL=chat.gateway.js.map

@@ -14,7 +14,8 @@ const room_entity_1 = require("../../chat/model/room.entity");
 const typeorm_1 = require("typeorm");
 let UserEntity = class UserEntity {
     emailToLowerCase() {
-        this.email = this.email.toLocaleLowerCase();
+        this.email = this.email.toLowerCase();
+        this.username = this.username.toLowerCase();
     }
 };
 exports.UserEntity = UserEntity;
@@ -40,6 +41,7 @@ __decorate([
 ], UserEntity.prototype, "rooms", void 0);
 __decorate([
     (0, typeorm_1.BeforeInsert)(),
+    (0, typeorm_1.BeforeUpdate)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)

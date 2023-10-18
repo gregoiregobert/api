@@ -16,7 +16,6 @@ exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const nestjs_typeorm_paginate_1 = require("nestjs-typeorm-paginate");
-const rxjs_1 = require("rxjs");
 const auth_service_1 = require("../../../auth/service/auth.service");
 const user_entity_1 = require("../../model/user.entity");
 const typeorm_2 = require("typeorm");
@@ -26,63 +25,77 @@ let UserService = class UserService {
         this.userRepository = userRepository;
         this.authService = authService;
     }
-    create(newUser) {
-        return this.mailExists(newUser.email).pipe((0, rxjs_1.switchMap)((exists) => {
+    async create(newUser) {
+        try {
+            const exists = await this.mailExists(newUser.email);
             if (!exists) {
-                return this.hashPassword(newUser.password).pipe((0, rxjs_1.switchMap)((passwordHash) => {
-                    newUser.password = passwordHash;
-                    return (0, rxjs_1.from)(this.userRepository.save(newUser)).pipe((0, rxjs_1.switchMap)((user) => this.findOne(user.id)));
-                }));
+                const passwordHash = await this.hashPassword(newUser.password);
+                newUser.password = passwordHash;
+                const user = this.userRepository.save(this.userRepository.create(newUser));
+                return this.findOne((await user).id);
             }
             else {
-                throw new common_1.HttpException("Email is already use", common_1.HttpStatus.CONFLICT);
+                throw new common_1.HttpException('Email is already in use', common_1.HttpStatus.CONFLICT);
             }
-        }));
+        }
+        catch {
+            throw new common_1.HttpException('Email is already in use', common_1.HttpStatus.CONFLICT);
+        }
     }
-    login(user) {
-        return this.findByEmail(user.email).pipe((0, rxjs_1.switchMap)((foundUser) => {
+    async login(user) {
+        try {
+            const foundUser = await this.findByEmail(user.email.toLowerCase());
             if (foundUser) {
-                return this.validatePassword(user.password, foundUser.password).pipe((0, rxjs_1.switchMap)((matches) => {
-                    if (matches) {
-                        return this.findOne(foundUser.id).pipe((0, rxjs_1.switchMap)((payload) => this.authService.generateJwt(payload)));
-                    }
-                    else {
-                        throw new common_1.HttpException("login was not successfull, wrong credentials", common_1.HttpStatus.UNAUTHORIZED);
-                    }
-                }));
+                const matches = await this.validatePassword(user.password, foundUser.password);
+                if (matches) {
+                    const payload = await this.findOne(foundUser.id);
+                    return this.authService.generateJwt(payload);
+                }
+                else {
+                    throw new common_1.HttpException("login was not successfull, wrong credentials", common_1.HttpStatus.UNAUTHORIZED);
+                }
             }
             else {
-                throw new common_1.HttpException("User not found", common_1.HttpStatus.NOT_FOUND);
+                throw new common_1.HttpException("login was not successfull, wrong credentials", common_1.HttpStatus.UNAUTHORIZED);
             }
-        }));
+        }
+        catch {
+            throw new common_1.HttpException('User not found', common_1.HttpStatus.NOT_FOUND);
+        }
     }
-    findAll(options) {
-        return (0, rxjs_1.from)((0, nestjs_typeorm_paginate_1.paginate)(this.userRepository, options));
+    async findAll(options) {
+        return (0, nestjs_typeorm_paginate_1.paginate)(this.userRepository, options);
     }
-    findByEmail(email) {
-        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email }, select: ['id', 'email', 'username', 'password'] }));
+    async findAllByUsername(username) {
+        return this.userRepository.find({
+            where: {
+                username: (0, typeorm_2.Like)(`%${username.toLowerCase()}%`)
+            }
+        });
     }
-    validatePassword(password, storedPasswordHash) {
+    async findByEmail(email) {
+        return this.userRepository.findOne({ where: { email }, select: ['id', 'email', 'username', 'password'] });
+    }
+    async validatePassword(password, storedPasswordHash) {
         return this.authService.comparePassword(password, storedPasswordHash);
     }
-    hashPassword(password) {
+    async hashPassword(password) {
         return this.authService.hashPassword(password);
     }
-    findOne(id) {
-        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { id } }));
+    async findOne(id) {
+        return this.userRepository.findOne({ where: { id } });
     }
-    getOne(id) {
+    async getOne(id) {
         return this.userRepository.findOneOrFail({ where: { id } });
     }
-    mailExists(email) {
-        return (0, rxjs_1.from)(this.userRepository.findOne({ where: { email } })).pipe((0, rxjs_1.map)((user) => {
-            if (user) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }));
+    async mailExists(email) {
+        const user = await this.userRepository.findOne({ where: { email } });
+        if (user) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 };
 exports.UserService = UserService;
