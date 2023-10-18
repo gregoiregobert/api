@@ -1,7 +1,9 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Subscriber } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/service/auth.service';
+import { PageI } from 'src/chat/model/page.interface';
 import { RoomI } from 'src/chat/model/room.interface';
 import { RoomService } from 'src/chat/service/room-service/room/room.service';
 import { UserI } from 'src/user/model/user.interface';
@@ -24,6 +26,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			} else {
 				socket.data.user = user;
 				const rooms = await this.roomService.getRoomForUser(user.id, {page: 1, limit: 10});
+				rooms.meta.currentPage = rooms.meta.currentPage -1;
 
 				return this.server.to(socket.id).emit('rooms', rooms);
 			}
@@ -47,5 +50,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		console.log('creator: ' + socket.data.user);
 		console.log('room' + room);
 		return this.roomService.createRoom(room, socket.data.user);
+	}
+
+	@SubscribeMessage('paginateRooms')
+	async onPaginateRoom(socket: Socket, page: PageI) {
+		page.limit = page.limit > 100 ? 100 : page.limit;
+		page.page = page.page +1;
+		const rooms = await this.roomService.getRoomForUser(socket.data.user.id, page);
+		rooms.meta.currentPage = rooms.meta.currentPage -1;
+		return this.server.to(socket.id).emit('rooms', rooms);
 	}
 }

@@ -32,6 +32,7 @@ let ChatGateway = class ChatGateway {
             else {
                 socket.data.user = user;
                 const rooms = await this.roomService.getRoomForUser(user.id, { page: 1, limit: 10 });
+                rooms.meta.currentPage = rooms.meta.currentPage - 1;
                 return this.server.to(socket.id).emit('rooms', rooms);
             }
         }
@@ -51,6 +52,13 @@ let ChatGateway = class ChatGateway {
         console.log('room' + room);
         return this.roomService.createRoom(room, socket.data.user);
     }
+    async onPaginateRoom(socket, page) {
+        page.limit = page.limit > 100 ? 100 : page.limit;
+        page.page = page.page + 1;
+        const rooms = await this.roomService.getRoomForUser(socket.data.user.id, page);
+        rooms.meta.currentPage = rooms.meta.currentPage - 1;
+        return this.server.to(socket.id).emit('rooms', rooms);
+    }
 };
 exports.ChatGateway = ChatGateway;
 __decorate([
@@ -63,6 +71,12 @@ __decorate([
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], ChatGateway.prototype, "onCreateRoom", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('paginateRooms'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:returntype", Promise)
+], ChatGateway.prototype, "onPaginateRoom", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: { origin: ['https://hoppscotch.io', 'http://localhost:3000', 'http://localhost:4200'] } }),
     __metadata("design:paramtypes", [auth_service_1.AuthService, user_service_1.UserService, room_service_1.RoomService])
